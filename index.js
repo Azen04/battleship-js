@@ -1,12 +1,29 @@
 import { Board } from "./scripts/battleShip.js";
-import { question, questionInt } from "readline-sync";
+import { keyInYN, question, questionInt } from "readline-sync";
 
-if (question('Welcome to Battleship. \n Would you like to play?') == 'yes') {
+if (keyInYN('Welcome to Battleship. \n Would you like to play?')) {
 
-    const gameBoard = new Board(questionInt('choose your board size: '))
+    const gameBoard = new Board(questionInt('choose your board size(min:4, max:6): '))
+
+    if (gameBoard.size > 6 || gameBoard.size < 4) {
+        let pass = false
+
+        while (pass == false) {
+            gameBoard.size = questionInt('size needs to be a number from 4-6 (inclusive), try again: ')
+
+            switch (gameBoard.size) {
+                case 4: pass = true; break;
+                case 5: pass = true; break;
+                case 6: pass = true; break;
+            
+                default:
+                    break;
+            }
+        }
+    }
+
     let playerInputCount = 0
-    let rowToTarget = null
-    let columnToTarget = null
+    let targetZone = null
 
     gameBoard.buildBoard()
     gameBoard.buildShips()
@@ -14,16 +31,14 @@ if (question('Welcome to Battleship. \n Would you like to play?') == 'yes') {
     while (gameBoard.size ** 2 > playerInputCount) {
         console.table(gameBoard.zones)
 
-        rowToTarget = questionInt('row: ')
-        columnToTarget = questionInt('column: ')
+        targetZone = question('zone: ')
 
-        while (gameBoard.validator(rowToTarget, columnToTarget) == false) {
-            console.log(`numbers should be less than ${gameBoard.size} and greater than or equal to 0`);
-            rowToTarget = questionInt('row: ')
-            columnToTarget = questionInt('column: ')
+        while (gameBoard.validator(targetZone) == false) {
+            console.log(`value should be a letter and a number e.g (a0)`);
+            targetZone = question('zone: ')
         }
 
-        gameBoard.hitZone(rowToTarget, columnToTarget)
+        gameBoard.hitZone(targetZone)
         console.clear()
 
         if (gameBoard.remainingShipZones == 0) {
@@ -41,5 +56,5 @@ __   _______ _   _   _    _ _____ _   _
         playerInputCount++
     }
 } else {
-    console.log('okay have a goad day');
+    console.log('okay have a good day');
 }

@@ -6,46 +6,58 @@ export class Board {
 
     buildBoard() {
 
-        this.zones = []
-        this.data = []
+        this.letters = ['A', 'B', 'C', 'D', 'E', 'F']
+        this.zones = {}
+        this.data = {}
         let rowIndex = 0;
 
+        while (rowIndex < this.size) {
+            this.zones[this.letters[rowIndex]] = []
+            this.data[this.letters[rowIndex]] = []
 
-        while (this.zones.length < this.size) {
-            this.zones.push([])
-            this.data.push([])
+            while (this.zones[this.letters[rowIndex]].length < this.size) {
 
-            while (this.zones[rowIndex].length < this.size) {
-                this.zones[rowIndex].push('-')
-                this.data[rowIndex].push({
+                this.zones[this.letters[rowIndex]].push('-')
+                this.data[this.letters[rowIndex]].push({
                     type: 'undecided',
                     id: 0,
                     hit: false
                 })
+
             }
             rowIndex++
         }
-
     }
 
     buildShips() {
 
+
+        let openZonesInPath = 0;
         let rowIndex = 0;
         let columnIndex = 0;
+        let openPaths = []
+        let difference = 0
         let run = false;
         let zoneType = null;
 
+        // check surroundiing zones for enough space
+        // check surrounding zones for already existing types 
+        // if zones are clean. place ship
+        // else don't place ship
 
-        while (this.zones.length > rowIndex) {
+
+
+
+        while (this.size > rowIndex) {
 
             columnIndex = 0
 
-            while (this.zones[rowIndex].length > columnIndex) {
+            while (this.size > columnIndex) {
 
                 zoneType = null;
                 run = false
 
-                if (this.data[rowIndex][columnIndex].type == 'undecided') {
+                if (this.data[this.letters[rowIndex]][columnIndex].type == 'undecided') {
                     run = true
                     zoneType = Math.random() < .5 ? 'small'
                         : Math.random() > .5 ? 'large'
@@ -56,291 +68,130 @@ export class Board {
 
                 if (zoneType == 'empty') {
                     run = false
-                    this.data[rowIndex][columnIndex].type = 'empty'
+                    this.data[this.letters[rowIndex]][columnIndex].type = 'empty'
                 }
                 zoneType
 
                 if (zoneType == 'small' && run) {
 
-                    let openPaths = []
-                    let rowIndex2 = 0;
-                    let columnIndex2 = 0;
-                    let checkedPaths = 0;
-                    let openZonesInPath = 0;
+                    let shipSize = 2
+                    openPaths = []
 
-                    rowIndex - 2 >= 0 ? openPaths.push('north') : rowIndex
-                    rowIndex + 2 <= this.size ? openPaths.push('south') : rowIndex
-                    columnIndex - 2 >= 0 ? openPaths.push('west') : rowIndex
-                    columnIndex + 2 <= this.size ? openPaths.push('east') : rowIndex
-
-                    openPaths
+                    rowIndex - shipSize >= 0 ? openPaths.push('north') : rowIndex
+                    rowIndex + shipSize < this.size ? openPaths.push('south') : rowIndex
+                    columnIndex - shipSize >= 0 ? openPaths.push('west') : rowIndex
+                    columnIndex + shipSize < this.size ? openPaths.push('east') : rowIndex
 
                     while (openPaths.length > 0) {
 
-                        if (openPaths[checkedPaths] == 'east') {
-                            while (rowIndex2 < 2) {
+                        while (difference < shipSize) {
 
-                                if (this.data[rowIndex][columnIndex + rowIndex2].type == 'undecided') {
-                                    openZonesInPath++
-                                }
-                                rowIndex2++
+                            switch (openPaths[0]) {
+
+                                case 'south': this.data[this.letters[rowIndex + difference]][columnIndex].type == 'undecided' ? openZonesInPath++ : openZonesInPath; break;
+                                case 'east': this.data[this.letters[rowIndex]][columnIndex + difference].type == 'undecided' ? openZonesInPath++ : openZonesInPath; break;
+                                case 'north': this.data[this.letters[rowIndex - difference]][columnIndex].type == 'undecided' ? openZonesInPath++ : openZonesInPath; break;
+                                case 'west': this.data[this.letters[rowIndex]][columnIndex - difference].type == 'undecided' ? openZonesInPath++ : openZonesInPath; break;
+
+                                default:
+                                    break;
                             }
 
-                            rowIndex2 = 0
-
-                            if (openZonesInPath == 2) {
-
-                                while (rowIndex2 < 2) {
-                                    this.data[rowIndex][columnIndex + rowIndex2].type = zoneType
-
-                                    this.remainingShipZones++
-                                    rowIndex2++
-                                }
-
-                                break
-
-                            }
-
-                            rowIndex2 = 0
-                            openPaths.splice(checkedPaths, 1)
+                            difference++
                         }
 
-                        rowIndex2 = 0
+                        difference = 0
 
-                        if (openPaths[checkedPaths] == 'west') {
-                            while (rowIndex2 < 2) {
+                        if (openZonesInPath == shipSize) {
 
-                                if (this.data[rowIndex][columnIndex - rowIndex2].type == 'undecided') {
-                                    openZonesInPath++
-                                }
-                                rowIndex2++
-                            }
+                            while (difference < shipSize) {
 
-                            rowIndex2 = 0
+                                switch (openPaths[0]) {
 
-                            if (openZonesInPath == 2) {
+                                    case 'south': this.data[this.letters[rowIndex + difference]][columnIndex].type = zoneType; break;
+                                    case 'east': this.data[this.letters[rowIndex]][columnIndex + difference].type = zoneType; break;
+                                    case 'north': this.data[this.letters[rowIndex - difference]][columnIndex].type = zoneType; break;
+                                    case 'west': this.data[this.letters[rowIndex]][columnIndex - difference].type = zoneType; break;
 
-                                while (rowIndex2 < 2) {
-                                    this.data[rowIndex][columnIndex - rowIndex2].type = zoneType
-
-
-                                    this.remainingShipZones++
-                                    rowIndex2++
+                                    default:
+                                        break;
                                 }
 
-                                break
-
+                                this.remainingShipZones++
+                                difference++
                             }
 
-                            rowIndex2 = 0
-
-                            openPaths.splice(checkedPaths, 1)
+                            difference = 0
+                            openZonesInPath = 0
+                            break
 
                         }
 
-                        if (openPaths[checkedPaths] == 'north') {
-                            while (columnIndex2 < 2) {
-
-                                if (this.data[rowIndex - columnIndex2][columnIndex].type == 'undecided') {
-                                    openZonesInPath++
-                                }
-                                columnIndex2++
-                            }
-
-                            columnIndex2 = 0
-
-                            if (openZonesInPath == 2) {
-
-                                while (columnIndex2 < 2) {
-                                    this.data[rowIndex - columnIndex2][columnIndex].type = zoneType
-
-                                    this.remainingShipZones++
-                                    columnIndex2++
-                                }
-
-                                break
-
-                            }
-
-                            columnIndex2 = 0
-
-                            openPaths.splice(checkedPaths, 1)
-                        }
-
-                        if (openPaths[checkedPaths] == 'south') {
-
-
-                            while (columnIndex2 < 2) {
-
-
-
-                                if (this.data[rowIndex + columnIndex2][columnIndex].type == 'undecided') {
-                                    openZonesInPath++
-                                }
-                                columnIndex2++
-
-                            }
-
-                            columnIndex2 = 0
-
-                            if (openZonesInPath == 2) {
-
-                                while (columnIndex2 < 2) {
-
-                                    this.data[rowIndex + columnIndex2][columnIndex].type = zoneType
-
-                                    this.remainingShipZones++
-                                    columnIndex2++
-                                }
-
-                                break
-
-                            }
-
-                            columnIndex2 = 0
-
-                            openPaths.splice(checkedPaths, 1)
-                        }
+                        openZonesInPath = 0
+                        difference = 0
+                        openPaths.splice(0, 1)
                     }
 
                 } else if (zoneType == 'large' && run) {
 
-                    let openPaths = []
-                    let rowIndex2 = 0;
-                    let columnIndex2 = 0;
-                    let checkedPaths = 0;
-                    let openZonesInPath = 0;
+                    let shipSize = 3
+                    openPaths = []
 
-
-                    rowIndex - 3 >= 0 ? openPaths.push('north') : rowIndex
-                    rowIndex + 3 <= this.size ? openPaths.push('south') : rowIndex
-                    columnIndex - 3 >= 0 ? openPaths.push('west') : rowIndex
-                    columnIndex + 3 <= this.size ? openPaths.push('east') : rowIndex
+                    rowIndex - shipSize >= 0 ? openPaths.push('north') : rowIndex
+                    rowIndex + shipSize < this.size ? openPaths.push('south') : rowIndex
+                    columnIndex - shipSize >= 0 ? openPaths.push('west') : rowIndex
+                    columnIndex + shipSize < this.size ? openPaths.push('east') : rowIndex
 
                     while (openPaths.length > 0) {
 
-                        if (openPaths[checkedPaths] == 'east') {
-                            while (rowIndex2 < 3) {
+                        while (difference < shipSize) {
 
-                                if (this.data[rowIndex][columnIndex + rowIndex2].type == 'undecided') {
-                                    openZonesInPath++
-                                }
-                                rowIndex2++
+                            switch (openPaths[0]) {
+                                
+                                case 'south': this.data[this.letters[rowIndex + difference]][columnIndex].type == 'undecided' ? openZonesInPath++ : openZonesInPath; break;
+                                case 'east': this.data[this.letters[rowIndex]][columnIndex + difference].type == 'undecided' ? openZonesInPath++ : openZonesInPath; break;
+                                case 'north': this.data[this.letters[rowIndex - difference]][columnIndex].type == 'undecided' ? openZonesInPath++ : openZonesInPath; break;
+                                case 'west': this.data[this.letters[rowIndex]][columnIndex - difference].type == 'undecided' ? openZonesInPath++ : openZonesInPath; break;
+
+                                default:
+                                    break;
                             }
 
-                            rowIndex2 = 0
-
-                            if (openZonesInPath == 3) {
-
-                                while (rowIndex2 < 3) {
-                                    this.data[rowIndex][columnIndex + rowIndex2].type = zoneType
-
-                                    this.remainingShipZones++
-                                    rowIndex2++
-                                }
-
-                                break
-
-                            }
-
-                            rowIndex2 = 0
-                            openPaths.splice(checkedPaths, 1)
+                            difference++
                         }
 
-                        if (openPaths[checkedPaths] == 'west') {
-                            while (rowIndex2 < 3) {
+                        difference = 0
 
-                                if (this.data[rowIndex][columnIndex - rowIndex2].type == 'undecided') {
-                                    openZonesInPath++
-                                }
-                                rowIndex2++
-                            }
+                        if (openZonesInPath == shipSize) {
 
-                            rowIndex2 = 0
+                            while (difference < shipSize) {
 
-                            if (openZonesInPath == 3) {
+                                switch (openPaths[0]) {
 
-                                while (rowIndex2 < 3) {
-                                    this.data[rowIndex][columnIndex - rowIndex2].type = zoneType
+                                    case 'south': this.data[this.letters[rowIndex + difference]][columnIndex].type = zoneType; break;
+                                    case 'east': this.data[this.letters[rowIndex]][columnIndex + difference].type = zoneType; break;
+                                    case 'north': this.data[this.letters[rowIndex - difference]][columnIndex].type = zoneType; break;
+                                    case 'west': this.data[this.letters[rowIndex]][columnIndex - difference].type = zoneType; break;
 
-                                    this.remainingShipZones++
-                                    rowIndex2++
+                                    default:
+                                        break;
                                 }
 
-                                break
-
+                                this.remainingShipZones++
+                                difference++
                             }
 
-                            rowIndex2 = 0
+                            difference = 0
+                            openZonesInPath = 0
+                            break
 
-                            openPaths.splice(checkedPaths, 1)
                         }
 
-                        if (openPaths[checkedPaths] == 'north') {
-                            while (columnIndex2 < 3) {
-
-                                if (this.data[rowIndex - columnIndex2][columnIndex].type == 'undecided') {
-                                    openZonesInPath++
-                                }
-                                columnIndex2++
-                            }
-
-                            columnIndex2 = 0
-
-                            if (openZonesInPath == 3) {
-
-                                while (columnIndex2 < 3) {
-                                    this.data[rowIndex - columnIndex2][columnIndex].type = zoneType
-
-                                    this.remainingShipZones++
-                                    columnIndex2++
-                                }
-
-                                break
-
-                            }
-
-                            columnIndex2 = 0
-
-                            openPaths.splice(checkedPaths, 1)
-                        }
-
-                        if (openPaths[checkedPaths] == 'south') {
-
-                            while (columnIndex2 < 3) {
-
-                                if (this.data[rowIndex + columnIndex2][columnIndex].type == 'undecided') {
-                                    openZonesInPath++
-                                }
-                                columnIndex2++
-
-                            }
-
-                            columnIndex2 = 0
-
-                            if (openZonesInPath == 3) {
-
-                                while (columnIndex2 < 3) {
-
-                                    this.data[rowIndex + columnIndex2][columnIndex].type = zoneType
-
-                                    this.remainingShipZones++
-                                    columnIndex2++
-
-                                }
-
-                                break
-
-                            }
-
-                            columnIndex2 = 0
-
-                            openPaths.splice(checkedPaths, 1)
-                        }
-
+                        openZonesInPath = 0
+                        difference = 0
+                        openPaths.splice(0, 1)
                     }
                 }
-
 
                 columnIndex++
             }
@@ -355,10 +206,10 @@ export class Board {
         let rowIndex = 0
         let columnIndex = 0
 
-        while (this.zones.length > rowIndex) {
+        while (this.size > rowIndex) {
 
-            while (this.zones[rowIndex].length > columnIndex) {
-                this.data[rowIndex][columnIndex].hit = true
+            while (this.size > columnIndex) {
+                this.data[this.letters[rowIndex]][columnIndex].hit = true
 
 
                 columnIndex++
@@ -370,11 +221,11 @@ export class Board {
 
         rowIndex = 0
 
-        while (this.zones.length > rowIndex) {
+        while (this.size > rowIndex) {
 
-            while (this.zones[rowIndex].length > columnIndex) {
+            while (this.size > columnIndex) {
 
-                this.zones[rowIndex][columnIndex] = this.data[rowIndex][columnIndex].type == 'small' ? 's' : this.data[rowIndex][columnIndex].type == 'large' ? 'l' : 'e'
+                this.zones[this.letters[rowIndex]][columnIndex] = this.data[this.letters[rowIndex]][columnIndex].type == 'small' ? 's' : this.data[this.letters[rowIndex]][columnIndex].type == 'large' ? 'l' : 'e'
 
                 columnIndex++
             }
@@ -385,31 +236,41 @@ export class Board {
 
     }
 
-    hitZone(row, column) {
+    hitZone(zone) {
 
-            this.data[row][column].hit = true
-            this.remainingShipZones = this.data[row][column].type == 'small' || this.data[row][column].type == 'large' ? --this.remainingShipZones : this.remainingShipZones
-            this.zones[row][column] = this.data[row][column].type == 'small' ? 's' : this.data[row][column].type == 'large' ? 'l' : 'e'
+        let rowToTarget = zone[0].toUpperCase()
+        let columnToTarget = zone[1] * 1
+
+        this.data[rowToTarget][columnToTarget].hit = true
+        this.remainingShipZones = this.data[rowToTarget][columnToTarget].type == 'small' || this.data[rowToTarget][columnToTarget].type == 'large' ? --this.remainingShipZones : this.remainingShipZones
+        this.zones[rowToTarget][columnToTarget] = this.data[rowToTarget][columnToTarget].type == 'small' ? 's' : this.data[rowToTarget][columnToTarget].type == 'large' ? 'l' : 'e'
     }
 
-    validator (row, column) {
+    validator(zone) {
+
+        let rowToTarget = zone[0].toUpperCase()
+        let columnToTarget = zone[1] * 1
 
         let validated = false
-                
-        validated = row < this.size && row >= 0 && column < this.size && column >= 0 ? true : false 
+
+        validated = this.letters.indexOf(rowToTarget) < this.size && this.letters.indexOf(rowToTarget) >= 0 && columnToTarget < this.size && columnToTarget >= 0 ? true : false
 
         return validated
 
     }
 }
 
-const gameBoard = new Board (4)
+const gameBoard = new Board(4)
 
 gameBoard.buildBoard()
 gameBoard.buildShips()
 gameBoard.debugBoard()
 
 // console.log(gameBoard.zones);
+// console.log(gameBoard.data);
+// console.table(gameBoard.zones)
+
+
 
 
 
