@@ -302,6 +302,8 @@ gameBoard.debugBoard()
 
 // console.log(gameBoard.zones);
 // console.log(gameBoard.data);
+
+// reveals entire board
 console.table(gameBoard.zones)
 
 module.exports = {
