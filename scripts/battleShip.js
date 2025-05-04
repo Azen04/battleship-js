@@ -1,4 +1,4 @@
-export class Board {
+class Board {
     constructor(size) {
         this.size = size
         this.remainingShipZones = 0
@@ -40,12 +40,27 @@ export class Board {
         let run = false;
         let zoneType = null;
 
-        // check surroundiing zones for enough space
-        // check surrounding zones for already existing types 
-        // if zones are clean. place ship
-        // else don't place ship
+        // tracks how many ships are left to be placed
+        let largeShipsToBePlaced = 0
+        let smallShipsToBePlaced = 0
 
+        switch (this.size) {
+            case 4:
+                largeShipsToBePlaced = 1;
+                smallShipsToBePlaced = 1;
+                break
+            case 5:
+                largeShipsToBePlaced = 1;
+                smallShipsToBePlaced = 2;
+                break
+            case 6:
+                largeShipsToBePlaced = 2;
+                smallShipsToBePlaced = 2;
+                break;
 
+            default:
+                break;
+        }
 
 
         while (this.size > rowIndex) {
@@ -57,10 +72,12 @@ export class Board {
                 zoneType = null;
                 run = false
 
+
+
                 if (this.data[this.letters[rowIndex]][columnIndex].type == 'undecided') {
                     run = true
-                    zoneType = Math.random() < .5 ? 'small'
-                        : Math.random() > .5 ? 'large'
+                    zoneType = Math.random() < .5 && smallShipsToBePlaced > 0 ? 'small'
+                        : Math.random() > .5 && largeShipsToBePlaced > 0 ? 'large'
                             : 'empty'
                 } else {
                     run = false
@@ -77,10 +94,17 @@ export class Board {
                     let shipSize = 2
                     openPaths = []
 
-                    rowIndex - shipSize >= 0 ? openPaths.push('north') : rowIndex
-                    rowIndex + shipSize < this.size ? openPaths.push('south') : rowIndex
-                    columnIndex - shipSize >= 0 ? openPaths.push('west') : rowIndex
-                    columnIndex + shipSize < this.size ? openPaths.push('east') : rowIndex
+                    rowIndex - shipSize >= 0 && Math.random() > .5 ? openPaths.push('north') : rowIndex
+                    rowIndex + shipSize < this.size && Math.random() > .5 ? openPaths.push('south') : rowIndex
+                    columnIndex - shipSize >= 0 && Math.random() > .5 ? openPaths.push('west') : rowIndex
+                    columnIndex + shipSize < this.size && Math.random() > .5 ? openPaths.push('east') : rowIndex
+
+                    if (openPaths.length == 0) {
+                        rowIndex - shipSize >= 0 ? openPaths.push('north') : rowIndex
+                        rowIndex + shipSize < this.size ? openPaths.push('south') : rowIndex
+                        columnIndex - shipSize >= 0 ? openPaths.push('west') : rowIndex
+                        columnIndex + shipSize < this.size ? openPaths.push('east') : rowIndex
+                    }
 
                     while (openPaths.length > 0) {
 
@@ -121,6 +145,7 @@ export class Board {
                                 difference++
                             }
 
+                            smallShipsToBePlaced--
                             difference = 0
                             openZonesInPath = 0
                             break
@@ -137,17 +162,24 @@ export class Board {
                     let shipSize = 3
                     openPaths = []
 
-                    rowIndex - shipSize >= 0 ? openPaths.push('north') : rowIndex
-                    rowIndex + shipSize < this.size ? openPaths.push('south') : rowIndex
-                    columnIndex - shipSize >= 0 ? openPaths.push('west') : rowIndex
-                    columnIndex + shipSize < this.size ? openPaths.push('east') : rowIndex
+                    rowIndex - shipSize >= 0 && Math.random() > .5 ? openPaths.push('north') : rowIndex
+                    rowIndex + shipSize < this.size && Math.random() > .5 ? openPaths.push('south') : rowIndex
+                    columnIndex - shipSize >= 0 && Math.random() > .5 ? openPaths.push('west') : rowIndex
+                    columnIndex + shipSize < this.size && Math.random() > .5 ? openPaths.push('east') : rowIndex
+
+                    if (openPaths.length == 0) {
+                        rowIndex - shipSize >= 0 ? openPaths.push('north') : rowIndex
+                        rowIndex + shipSize < this.size ? openPaths.push('south') : rowIndex
+                        columnIndex - shipSize >= 0 ? openPaths.push('west') : rowIndex
+                        columnIndex + shipSize < this.size ? openPaths.push('east') : rowIndex
+                    }
 
                     while (openPaths.length > 0) {
 
                         while (difference < shipSize) {
 
                             switch (openPaths[0]) {
-                                
+
                                 case 'south': this.data[this.letters[rowIndex + difference]][columnIndex].type == 'undecided' ? openZonesInPath++ : openZonesInPath; break;
                                 case 'east': this.data[this.letters[rowIndex]][columnIndex + difference].type == 'undecided' ? openZonesInPath++ : openZonesInPath; break;
                                 case 'north': this.data[this.letters[rowIndex - difference]][columnIndex].type == 'undecided' ? openZonesInPath++ : openZonesInPath; break;
@@ -177,10 +209,12 @@ export class Board {
                                         break;
                                 }
 
+
                                 this.remainingShipZones++
                                 difference++
                             }
 
+                            largeShipsToBePlaced--
                             difference = 0
                             openZonesInPath = 0
                             break
@@ -225,7 +259,7 @@ export class Board {
 
             while (this.size > columnIndex) {
 
-                this.zones[this.letters[rowIndex]][columnIndex] = this.data[this.letters[rowIndex]][columnIndex].type == 'small' ? 's' : this.data[this.letters[rowIndex]][columnIndex].type == 'large' ? 'l' : 'e'
+                this.zones[this.letters[rowIndex]][columnIndex] = this.data[this.letters[rowIndex]][columnIndex].type == 'small' ? '🟡' : this.data[this.letters[rowIndex]][columnIndex].type == 'large' ? '🔵' : '❗'
 
                 columnIndex++
             }
@@ -243,7 +277,7 @@ export class Board {
 
         this.data[rowToTarget][columnToTarget].hit = true
         this.remainingShipZones = this.data[rowToTarget][columnToTarget].type == 'small' || this.data[rowToTarget][columnToTarget].type == 'large' ? --this.remainingShipZones : this.remainingShipZones
-        this.zones[rowToTarget][columnToTarget] = this.data[rowToTarget][columnToTarget].type == 'small' ? 's' : this.data[rowToTarget][columnToTarget].type == 'large' ? 'l' : 'e'
+        this.zones[rowToTarget][columnToTarget] = this.data[rowToTarget][columnToTarget].type == 'small' ? '🟡' : this.data[rowToTarget][columnToTarget].type == 'large' ? '🔵' : '❗'
     }
 
     validator(zone) {
@@ -268,9 +302,8 @@ gameBoard.debugBoard()
 
 // console.log(gameBoard.zones);
 // console.log(gameBoard.data);
-// console.table(gameBoard.zones)
+console.table(gameBoard.zones)
 
-
-
-
-
+module.exports = {
+    Board
+}

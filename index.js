@@ -1,7 +1,7 @@
-import { Board } from "./scripts/battleShip.js";
-import { keyInYN, question, questionInt } from "readline-sync";
+const { Board } = require("./scripts/battleShip.js");
+const { keyInYN, question, questionInt } = require("readline-sync");
 
-if (keyInYN('Welcome to Battleship. \n Would you like to play?')) {
+if (keyInYN('Welcome to Battleship.\nWould you like to play?')) {
 
     const gameBoard = new Board(questionInt('choose your board size(min:4, max:6): '))
 
@@ -15,7 +15,7 @@ if (keyInYN('Welcome to Battleship. \n Would you like to play?')) {
                 case 4: pass = true; break;
                 case 5: pass = true; break;
                 case 6: pass = true; break;
-            
+
                 default:
                     break;
             }
